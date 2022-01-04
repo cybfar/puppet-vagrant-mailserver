@@ -118,9 +118,185 @@ package { 'postfix-mysql':
   ensure  => present,
 }
 
+file {'/etc/postfix/main.cf':
+  ensure => present,
+  source => '/vagrant/puppet/files/postfix/main.cf'
+}
+
+file {'/etc/postfix/master.cf':
+  ensure => present,
+  source => '/vagrant/puppet/files/postfix/master.cf'
+}
+
+service { 'postfix':
+  ensure  => running,
+}
+
+group { 'vhosts':
+  ensure => present,
+  gid    => 5000,
+}
+
+user { '':
+  ensure => present,
+  uid    => '5000',
+  home   => '/var/mail/vhosts',
+  shell  => '/bin/false',
+  groups => ['vhosts'],
+}
+
+### Dovecot
+
+package {'dovecot-imapd':
+  ensure => present
+}
+package {'dovecot-mysql':
+  ensure => present
+}
+package {'dovecot-core':
+  ensure => present
+}
+
+file {'/etc/dovecot/conf.d/10-mail.conf':
+  ensure => present,
+}
+
+
+exec{'mail location':
+    cwd     => '/etc/dovecot/conf.d',
+    command => 'sed -i s+^mail_location.*+"mail_location = maildir:/var/mail/vhosts/%d/%n"+g 10-mail.conf',
+    path    => '/bin/',
+    unless  =>'/bin/grep "maildir:/var/mail/vhosts/" 10-mail.conf'
+  }
+
+  exec{'mail privileged group':
+    cwd     => '/etc/dovecot/conf.d',
+    command => 'sed -i s+^mail_privileged_group.*+"mail_privileged_group = mail"+g 10-mail.conf',
+    path    => '/bin/',
+    unless  =>'/bin/grep "mail_privileged_group = mail" 10-mail.conf'
+  }
+
+
+file {'/etc/dovecot/conf.d/10-auth.conf':
+  ensure => present,
+}
+
+exec{'block clear pwd':
+    cwd     => '/etc/dovecot/conf.d',
+    command => 'sed -i s+"\#\!include auth-sql.*"+"\!include auth-sql.conf.ext"+g 10-auth.conf',
+    path    => '/bin/',
+    unless  =>'/bin/grep "^\!include auth-sql.conf.ext$" 10-auth.conf'
+  }
+
+file {'/etc/dovecot/conf.d/auth-sql.conf.ext':
+  ensure => present,
+  source => '/vagrant/puppet/files/dovecot/auth-sql.conf.ext'
+}
+
+file {'/etc/dovecot/conf.d/dovecot-sql.conf.ext':
+  ensure => present,
+  source => '/vagrant/puppet/files/dovecot/dovecot-sql.conf.ext'
+}
+
+service {'dovecot':
+  ensure => running,
+  enable => true
+}
+
+
+### Amavis
+
+package {'amavisd-new':
+  ensure => present
+}
+
+file {'/etc/amavis/conf.d/15-content-filter-mode':
+  ensure => present,
+  source => 'vagrant/puppet/files/amavis/15-content-filter-mode'
+}
+
+service {'amavis':
+  ensure => running,
+  enable => true
+}
+
+### ClamAv
+
+package {'clamav':
+  ensure => present
+}
+
+package {'clamav-daemon':
+  ensure => present
+}
+
+
+### Spamassassin
+
+package {'spamassassin':
+  ensure => present
+}
+
+file {'/etc/default/spamassassin':
+  ensure => present,
+  source => '/vagrant/puppet/files/spamassassin/spamassassin'
+}
 
 
 
+exec {'wget https://github.com/roundcube/roundcubemail/releases/download/1.5.1/roundcubemail-1.5.1.tar.gz':
+  path    => '/usr/bin',
+  cwd     => '/tmp/',
+  creates => '/var/www/html/roundcubemail/index.php'
+}
+
+exec {'tar -xzf "roundcubemail-1.5.1.tar.gz"':
+  path    => '/bin',
+  cwd     => '/tmp/',
+  creates => '/var/www/html/roundcubemail/index.php'
+}
+
+exec { 'sudo mv roundcubemail-1.5.1 /var/www/html/roundcubemail':
+  path    => '/usr/bin',
+  cwd     => '/tmp/',
+  creates => '/var/www/html/roundcubemail/index.php'
+}
+
+file {['/var/www/html/roundcubemail/temp', '/var/www/html/roundcubemail/logs']:
+  ensure => directory,
+  owner  => 'www-data',
+  mode   => '0755',
+}
+
+mysql::db { 'roundcubemail':
+  user     => 'roundcubemail',
+  password => 'roundcubemail',
+  host     => 'localhost',
+  grant    => ['ALL'],
+  sql      => '/var/www/html/roundcubemail/SQL/mysql.initial.sql',
+}
+
+file {'/etc/apache2/sites-available/roundcube.conf':
+  ensure => present,
+  source => '/vagrant/puppet/files/roundcube/rc.conf'
+}
+
+file {'/etc/apache2/sites-available/roundcube-ssl.conf':
+  ensure => present,
+  source => '/vagrant/puppet/files/roundcube/rc-ssl.conf'
+}
+
+exec {'a2ensite roundcube.conf':
+  path   => '/usr/sbin',
+  cwd    => '/etc/apache2/sites-available',
+  notify => Service['apache2']
+}
+
+exec {'a2ensite roundcube-ssl.conf':
+  path   => '/usr/sbin',
+  cwd    => '/etc/apache2/sites-available',
+  notify => Service['apache2']
+}
 
 ###Apache services
     service { 'apache2':

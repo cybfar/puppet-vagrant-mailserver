@@ -1,0 +1,5 @@
+user = postfixadmin
+password = postfixadmin@123
+hosts = 127.0.0.1
+dbname = postfixdb
+query = SELECT domain FROM domain WHERE domain ='%s' AND active = '1'
