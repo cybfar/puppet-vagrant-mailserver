@@ -1,0 +1,16 @@
+;
+; BIND reverse data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     ns.cnhu.com. root.cnhu.com. (
+                              1         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@               IN              NS              ns.cnhu.com.
+@               IN              MX 10           mail.cnhu.com.
+2               IN              PTR             ns.cnhu.com.
+2               IN              PTR             mail.cnhu.com.
+2               IN              PTR             admin.cnhu.com.
