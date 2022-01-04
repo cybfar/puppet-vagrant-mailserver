@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "ubuntu-18.04"
+  config.vm.box = "ubuntu/xenial64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -72,6 +72,7 @@ Vagrant.configure("2") do |config|
   puppet_path = box_path + '/puppet';
   config.vm.provision :puppet do |puppet|
     puppet.manifest_file  = "main.pp"
+    puppet.manifest_file  = "requirements.pp"
     puppet.manifests_path = puppet_path + "/manifests"
     puppet.module_path    = [ puppet_path + "/modules" ]
   end
