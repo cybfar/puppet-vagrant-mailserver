@@ -25,7 +25,7 @@ Les prérequis pour pouvoir faire le déploiement automatique :
 Pour pouvoir installer le serveur mail , il faut au préalable installer :
 
 - [Vagrant](https://www.vagrantup.com/) - Installation de Vagrant
-- [Virtualbox]https://www.virtualbox.org/() - Installation de Virtualbox
+- [Virtualbox](https://www.virtualbox.org/) - Installation de Virtualbox
 - [Git](https://git-scm.com/downloads) - Installation de Git
 
 
