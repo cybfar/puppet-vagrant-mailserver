@@ -36,5 +36,5 @@ Pour lancer le déploiement automatique, il faut utiliser les commandes ci-desso
 ```
 git clone https://github.com/cybfar/puppet-vagrant-mailserver.git
 cd puppet-vagrant-mailserver
-./deploy.sh
+./deploiement.sh
 ```
