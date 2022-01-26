@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = aspyatkin/ubuntu-18.04-server
+  config.vm.box = "aspyatkin/ubuntu-18.04-server"
   #config.vm.box = "ubuntu/xenial64"
 
   # Disable automatic box update checking. If you disable this, then
