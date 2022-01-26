@@ -66,13 +66,14 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     sudo apt update
-    sudo apt install puppet 
+    sudo apt install -y puppet 
    SHELL
 
   box_path = File.expand_path(__FILE__ + '/..')
   puppet_path = box_path + '/puppet';
   config.vm.provision :puppet do |puppet|
     puppet.manifest_file  = "main.pp"
+    puppet.manifest_file  = "requirements.pp"
     puppet.manifests_path = puppet_path + "/manifests"
     puppet.module_path    = [ puppet_path + "/modules" ]
   end
